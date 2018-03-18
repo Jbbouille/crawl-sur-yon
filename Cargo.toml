@@ -1,0 +1,6 @@
+[package]
+name = "crawl-sur-yon"
+version = "0.1.0"
+authors = ["Jean-Baptiste Petit <beanbaptiste.petit@gmail.com>"]
+
+[dependencies]
