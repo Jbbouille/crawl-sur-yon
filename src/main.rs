@@ -1,16 +1,9 @@
-extern crate html5ever;
 extern crate reqwest;
-extern crate string_cache;
+extern crate kuchiki;
 
-use std::default::Default;
+use kuchiki::traits::*;
 
 use reqwest::Client;
-
-use html5ever::parse_document;
-use html5ever::rcdom::{NodeData, RcDom, Handle};
-use html5ever::tendril::TendrilSink;
-
-use string_cache::Atom;
 
 fn main() {
     let url = "http://www.bailly-immo.com/catalog/advanced_search_result.php?action=update_search&search_id=&C_28_search=EGAL&C_28_type=UNIQUE&C_28=Vente&C_27_search=EGAL&C_27_type=UNIQUE&C_27=23&C_65_search=CONTIENT&C_65_type=TEXT&C_65=85000+LA+ROCHE+SUR+YON&C_65_temp=85000+LA+ROCHE+SUR+YON&C_30=9&C_30_search=COMPRIS&C_30_type=NUMBER&C_30_MIN=&C_30_MAX=&C_30_loc=9&C_33_search=COMPRIS&C_33_type=NUMBER&C_33_MAX=&C_33_MIN=0&C_34=0&C_34_search=COMPRIS&C_34_type=NUMBER&C_34_MIN=&C_34_MAX=";
@@ -26,34 +19,20 @@ fn main() {
         return;
     }
 
-    let dom_result = parse_document(RcDom::default(), Default::default())
-        .from_utf8()
-        .read_from(&mut result.unwrap().as_bytes());
+    let css_selector = "div.bien div.col-md-12";
+    let document = kuchiki::parse_html().one(result.unwrap());
 
-    if dom_result.is_err() {
-        println!("Error while parsing result of the request");
-        return;
-    }
+    for css_match in document.select(css_selector).unwrap() {
+        let as_node = css_match.as_node();
 
-    walk(dom_result.unwrap().document);
-}
+        let x = as_node.select("p").unwrap().next().unwrap();
+        let text_description = x.as_node().as_text().unwrap().borrow();
 
+        let y = as_node.select("span.listing_ref").unwrap().next().unwrap();
+        let text__product_reference = x.as_node().as_text().unwrap().borrow();
 
-fn walk(handle: Handle) {
-    let div = Atom::from("div");
-
-    let node = handle;
-
-    match node.data {
-        NodeData::Element { ref name, .. } => {
-            if name.local == div {
-                println!("{}", name.local);
-            }
-        },
-        _ => {},
-    };
-
-    for child in node.children.borrow().iter() {
-        walk(child.clone());
+        let z = as_node.select("span.listing_price").unwrap().next().unwrap();
+        let text_product_price = z.as_node().as_text().unwrap().borrow();
+        println!("{:?},{:?},{:?}", text__product_reference, text_description, text_product_price);
     }
 }

@@ -5,5 +5,4 @@ authors = ["Jean-Baptiste Petit <beanbaptiste.petit@gmail.com>"]
 
 [dependencies]
 reqwest = "0.8.5"
-html5ever = "0.22.0"
-string_cache = "0.7.1"
+kuchiki = "0.7.0"
